@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(tidyr)
 ```
 
 Load Data
@@ -23,19 +24,18 @@ plantcount <- read_csv("qnest_plantsurvey.csv")
 
 ```
 
-dWrangle Data
+Wrangle Data
 
 ```{r}
 #create a data frame with unique moisture data per data
-#create new data frame from subset of past moisture data
 moisture <- moisture %>% 
   group_by(site, date) %>%  #organize data by site and date
   summarise(soilmoist1 = first(soilmoist1), soilmoist5 = first(soilmoist5)) #extract the first moisture data point from days with multiple entires
 
 #wrangle plant count
 plantcount <- plantcount %>% 
-  select( -c(8:126), -3, -4, -7) %>% 
-  rename(plant = plant_name) %>% 
+  select( -c(8:126), -3, -4, -7) %>% #remove irrelavant columns
+  rename(plant = plant_name) %>% #rename column to join frames
   filter(plant %in% c("Linum lewisii", "Achillea millefolium", "Taraxacum officinale", "Potentilla pulcherrima")) %>% #get rid of non smaple species data
   mutate(date = mdy(date)) %>% #convert date from string to date format
   filter(date > mdy("6/1/2021")) %>%  #cut data to timeframe
@@ -72,11 +72,14 @@ visitation <- visitation %>%
   left_join(avg_traits, visitation, by=c("site", "date", "plant")) %>% #join avg trait data to visitation data
   distinct() %>%  #isolate distinct row with one visitation data instance
   left_join(plantcount,by = c("site", "date","plant")) %>% 
-  mutate(norm_visit = visits/count) #create varible nomalizing visits
+  mutate(norm_visit = visits/count)  #create varible nomalizing visits
 
-#bad results, we dont catch 50x more pollinators when we have 50x more flowers
 
-#either drop rows with no trait data or fill in NA with data
+#visitation2 <- visitation %>%
+#  group_by(site, plant) %>% 
+#  fill(avg_display) #WHAT THE FUCK FIL MOHTER FCKFI
+
+#fill in NA with data? how to not fill too much
 
 ```
 
@@ -92,19 +95,31 @@ Visualize Data
 
    ggplot(p_traits, aes(fill=drought_cat, y=flowerheight, x=plant)) +
   geom_bar(position='dodge', stat='identity')
-
-      
+   
 #display vis
    
  ggplot(p_traits, aes(fill=drought_cat, y=displaysize, x=plant)) +
   geom_bar(position='dodge', stat='identity')
 
+ 
+#visitation vs count vis
+ 
+  visitation %>%
+  ggplot(aes(count,visits,color=plant )) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  theme_classic()
+  
+  #giving bad results, we dont catch 50x more pollinators when we have 50x more flowers
+
+ 
 #visitation vs height vis
  
  visitation %>%
   ggplot(aes(avg_height,norm_visit,color=plant )) +
   geom_point() +
-  geom_smooth(method="lm")
+  geom_smooth(method="lm") +
+  theme_classic()
  
  #visitation vs display vis
  
@@ -123,8 +138,22 @@ Visualize Data
 Analyze Data
 
 ```{r}
+#t test assumption tests
+
+# shapiro test and histagrams -----
+ # P > 0.05 means normal distribution
+ 
+
+
+ shapiro.test(PW_steosa)
+ hist(PW_steosa)
+ 
+ shapiro.test(PW_versicolor)
+ hist(PW_versicolor)
+
 
 #t test
+
 
 #regression
 
