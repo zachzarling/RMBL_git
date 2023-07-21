@@ -17,9 +17,11 @@ P_traits <- read_csv("ZZ_planttraits.csv") #convert excel data to data frame
 
 Moisture <- read_csv("PastMoistureData.csv")
 
+visitation <- read_csv("qnest_network.csv")
+
 ```
 
-Wrangle Data
+dWrangle Data
 
 ```{r}
 #create a data frame with unique moisture data per data
@@ -39,11 +41,29 @@ Data <- P_traits %>%
   mutate(date = mdy(date)) %>% #convert date from string to date format
   mutate(drought_cat = ifelse(date < mdy("1/1/2023"), "drought", "nondrought")) %>%
 #create new variable for drought and non drought years and assign drought to pre 2023 years
-  filter(plant != "Viola praemorsa") #get rid of viola praemorsa, not enough data
+  filter(plant != "Viola praemorsa") %>% #get rid of viola praemorsa, not enough data
+  group_by(site, date, plant) %>% #group data by site, data and plant
+  mutate(avg_height = mean(flowerheight), avg_display = mean(displaysize)) #create new cloumn in data giving each day an average height and display size 
 
 
+avg_traits <- Data %>% 
+  select(avg_height,avg_display) #create new data frame for just average traits to be joined with visitation data
 
-
+#filter network data to timeframe
+visitation <- visitation %>%
+  filter(plant %in% c("Linum lewisii", "Achillea millefolium", "Taraxacum  officinale", "Potentilla pulcherrima")) %>% #get rid of non smaple species data
+   mutate(date = mdy(date)) %>% #convert date from string to date format
+   filter(date > mdy("7/18/2022")) %>% #cut data to timeframe
+   select(-specimen_number, -vial_number, -round, -start_time, -end_time, -insect_subfamily, -insect_genus, -insect_species, -fine_ID, -tray_num, -pollen)   #remove unneccessary columns
+  
+visitation <- visitation %>%  
+  group_by(site, date, plant) %>% #group by site, date and plant
+  mutate(visits = table(plant)) %>% #create a new column in visitation counting how many instnaces of visitation there is
+  left_join(avg_traits, visitation, by=c("site", "date", "plant")) %>% #adding rows?????
+  
+  drop_na("avg_display") %>%  #drop column with no trait data************
+  drop_na("avg_height")
+  
 
 ```
 
@@ -66,7 +86,19 @@ Visualize Data
  ggplot(Data, aes(fill=drought_cat, y=displaysize, x=plant)) +
   geom_bar(position='dodge', stat='identity')
 
-
+#visitation vs height vis
+ 
+ visitation %>%
+  ggplot(aes(avg_height,visits,color=plant )) +
+  geom_point() +
+  geom_smooth(method = "lm")
+ 
+ #visitation vs display vis
+ 
+  visitation %>%
+  ggplot(aes(avg_display,visits,color=plant )) +
+  geom_point() +
+  geom_smooth(method="lm")
 
 
 
