@@ -37,22 +37,49 @@ Data <- P_traits %>%
          moist_5 = ifelse(is.na(moist_5) == TRUE, soilmoist5, moist_5)) %>%
   select(-soilmoist1, -soilmoist5) %>% #remove past soil moisture coulmns from data
   mutate(date = mdy(date)) %>% #convert date from string to date format
-  mutate(drought_cat = ifelse(date < mdy("1/1/2023"), "drought", "nondrought")) #create new variable for drought and non drought years and assign drought to pre 2023 years
+  mutate(drought_cat = ifelse(date < mdy("1/1/2023"), "drought", "nondrought")) %>%
+#create new variable for drought and non drought years and assign drought to pre 2023 years
+  filter(plant != "Viola praemorsa") #get rid of viola praemorsa, not enough data
+
+
+
+
+
 ```
 
 Visualize Data
 
 ```{r}
 
-#create vectors of each plants data for drought and non drought
+#drought and plant traits
 
-#take an average
-#visualize data
+#create average trait values for each plants data across drought and non drought years
 
-# visdata test
+#height vis
+
+   ggplot(Data, aes(fill=drought_cat, y=flowerheight, x=plant)) +
+  geom_bar(position='dodge', stat='identity')
+
+      
+#display vis
+   
+ ggplot(Data, aes(fill=drought_cat, y=displaysize, x=plant)) +
+  geom_bar(position='dodge', stat='identity')
 
 
-ggplot(aes())
+
+
+
+
+
 ```
 
 Analyze Data
+
+```{r}
+
+#t test
+
+#regression
+
+```
