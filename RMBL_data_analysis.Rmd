@@ -45,9 +45,11 @@ Visualize Data
 ```{r}
 
 #create vectors of each plants data for drought and non drought
+
 #take an average
 #visualize data
 
+# visdata test
 
 
 ggplot(aes())
