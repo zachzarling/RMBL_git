@@ -13,11 +13,13 @@ library(tidyverse)
 Load Data
 
 ```{r}
-P_traits <- read_csv("ZZ_planttraits.csv") #convert excel data to data frame
+p_traits <- read_csv("ZZ_planttraits.csv") #convert excel data to data frame
 
-Moisture <- read_csv("PastMoistureData.csv")
+moisture <- read_csv("PastMoistureData.csv")
 
 visitation <- read_csv("qnest_network.csv")
+
+plantcount <- read_csv("qnest_plantsurvey.csv")
 
 ```
 
@@ -26,44 +28,55 @@ dWrangle Data
 ```{r}
 #create a data frame with unique moisture data per data
 #create new data frame from subset of past moisture data
-Moisture_Unique <- Moisture %>% 
+moisture <- moisture %>% 
   group_by(site, date) %>%  #organize data by site and date
   summarise(soilmoist1 = first(soilmoist1), soilmoist5 = first(soilmoist5)) #extract the first moisture data point from days with multiple entires
 
+#wrangle plant count
+plantcount <- plantcount %>% 
+  select( -c(8:126), -3, -4, -7) %>% 
+  rename(plant = plant_name) %>% 
+  filter(plant %in% c("Linum lewisii", "Achillea millefolium", "Taraxacum officinale", "Potentilla pulcherrima")) %>% #get rid of non smaple species data
+  mutate(date = mdy(date)) %>% #convert date from string to date format
+  filter(date > mdy("6/1/2021")) %>%  #cut data to timeframe
+  group_by(site, date, plant) %>% 
+  summarise(count = sum(total_flowers))  #sum plant counts with same date/site
+  
+
 
 #create full data set by adding past moisture data to plant traits
-Data <- P_traits %>% 
-  left_join(Moisture_Unique,by = c("site", "date")) %>% #join moisture data to rows with the same date and site
-  rename(moist_1 = `Moisture Top`, moist_5 = `Moisture Middle`) %>% #rename column names for coding simplicity
-  mutate(moist_1 = ifelse(is.na(moist_1) == TRUE, soilmoist1, moist_1), #add soil moisture data to rows lacking moisture data
+p_traits <- p_traits %>% 
+  left_join(moisture,by = c("site", "date")) %>% #join moisture using date and site
+  rename(moist_1 = `Moisture Top`, moist_5 = `Moisture Middle`) %>% #rename column 
+  mutate(moist_1 = ifelse(is.na(moist_1) == TRUE, soilmoist1, moist_1),#add moist
          moist_5 = ifelse(is.na(moist_5) == TRUE, soilmoist5, moist_5)) %>%
   select(-soilmoist1, -soilmoist5) %>% #remove past soil moisture coulmns from data
   mutate(date = mdy(date)) %>% #convert date from string to date format
   mutate(drought_cat = ifelse(date < mdy("1/1/2023"), "drought", "nondrought")) %>%
-#create new variable for drought and non drought years and assign drought to pre 2023 years
-  filter(plant != "Viola praemorsa") %>% #get rid of viola praemorsa, not enough data
+#new variable for drought(>23) and nondrought years(<23)
+  filter(plant != "Viola praemorsa") %>% #remove viola praemorsa, not enough data
   group_by(site, date, plant) %>% #group data by site, data and plant
   mutate(avg_height = mean(flowerheight), avg_display = mean(displaysize)) #create new cloumn in data giving each day an average height and display size 
 
+avg_traits <- p_traits %>% 
+  select(avg_height,avg_display) #create new data frame for average traits to be joined with visitation data
 
-avg_traits <- Data %>% 
-  select(avg_height,avg_display) #create new data frame for just average traits to be joined with visitation data
-
-#filter network data to timeframe
+#wrangle visitation data to usable format
 visitation <- visitation %>%
-  filter(plant %in% c("Linum lewisii", "Achillea millefolium", "Taraxacum  officinale", "Potentilla pulcherrima")) %>% #get rid of non smaple species data
-   mutate(date = mdy(date)) %>% #convert date from string to date format
-   filter(date > mdy("7/18/2022")) %>% #cut data to timeframe
-   select(-specimen_number, -vial_number, -round, -start_time, -end_time, -insect_subfamily, -insect_genus, -insect_species, -fine_ID, -tray_num, -pollen)   #remove unneccessary columns
-  
-visitation <- visitation %>%  
+  select( -c(3:8), -c(10:19)) %>%   #remove unneccessary columns
+  filter(plant %in% c("Linum lewisii", "Achillea millefolium", "Taraxacum officinale", "Potentilla pulcherrima")) %>% #get rid of non smaple species data
+  mutate(date = mdy(date)) %>% #convert date from string to date format
+  filter(date > mdy("6/1/2021")) %>% #cut data to timeframe
   group_by(site, date, plant) %>% #group by site, date and plant
-  mutate(visits = table(plant)) %>% #create a new column in visitation counting how many instnaces of visitation there is
-  left_join(avg_traits, visitation, by=c("site", "date", "plant")) %>% #adding rows?????
-  
-  drop_na("avg_display") %>%  #drop column with no trait data************
-  drop_na("avg_height")
-  
+  mutate(visits = table(plant)) %>%  #new column summing visitation
+  left_join(avg_traits, visitation, by=c("site", "date", "plant")) %>% #join avg trait data to visitation data
+  distinct() %>%  #isolate distinct row with one visitation data instance
+  left_join(plantcount,by = c("site", "date","plant")) %>% 
+  mutate(norm_visit = visits/count) #create varible nomalizing visits
+
+#bad results, we dont catch 50x more pollinators when we have 50x more flowers
+
+#either drop rows with no trait data or fill in NA with data
 
 ```
 
@@ -77,28 +90,29 @@ Visualize Data
 
 #height vis
 
-   ggplot(Data, aes(fill=drought_cat, y=flowerheight, x=plant)) +
+   ggplot(p_traits, aes(fill=drought_cat, y=flowerheight, x=plant)) +
   geom_bar(position='dodge', stat='identity')
 
       
 #display vis
    
- ggplot(Data, aes(fill=drought_cat, y=displaysize, x=plant)) +
+ ggplot(p_traits, aes(fill=drought_cat, y=displaysize, x=plant)) +
   geom_bar(position='dodge', stat='identity')
 
 #visitation vs height vis
  
  visitation %>%
-  ggplot(aes(avg_height,visits,color=plant )) +
+  ggplot(aes(avg_height,norm_visit,color=plant )) +
   geom_point() +
-  geom_smooth(method = "lm")
+  geom_smooth(method="lm")
  
  #visitation vs display vis
  
   visitation %>%
-  ggplot(aes(avg_display,visits,color=plant )) +
+  ggplot(aes(avg_display,norm_visit,color=plant )) +
   geom_point() +
   geom_smooth(method="lm")
+  
 
 
 
