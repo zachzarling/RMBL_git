@@ -1,3 +1,0 @@
-booger
-
-eat eggs

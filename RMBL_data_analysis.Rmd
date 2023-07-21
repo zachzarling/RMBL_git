@@ -1,0 +1,56 @@
+---
+title: "RMBL_data_analysis"
+author: "Zach Zarling"
+date: "2023-07-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+Load Data
+
+```{r}
+P_traits <- read_csv("ZZ_planttraits.csv") #convert excel data to data frame
+
+Moisture <- read_csv("PastMoistureData.csv")
+
+```
+
+Wrangle Data
+
+```{r}
+#create a data frame with unique moisture data per data
+#create new data frame from subset of past moisture data
+Moisture_Unique <- Moisture %>% 
+  group_by(site, date) %>%  #organize data by site and date
+  summarise(soilmoist1 = first(soilmoist1), soilmoist5 = first(soilmoist5)) #extract the first moisture data point from days with multiple entires
+
+
+#create full data set by adding past moisture data to plant traits
+Data <- P_traits %>% 
+  left_join(Moisture_Unique,by = c("site", "date")) %>% #join moisture data to rows with the same date and site
+  rename(moist_1 = `Moisture Top`, moist_5 = `Moisture Middle`) %>% #rename column names for coding simplicity
+  mutate(moist_1 = ifelse(is.na(moist_1) == TRUE, soilmoist1, moist_1), #add soil moisture data to rows lacking moisture data
+         moist_5 = ifelse(is.na(moist_5) == TRUE, soilmoist5, moist_5)) %>%
+  select(-soilmoist1, -soilmoist5) %>% #remove past soil moisture coulmns from data
+  mutate(date = mdy(date)) %>% #convert date from string to date format
+  mutate(drought_cat = ifelse(date < mdy("1/1/2023"), "drought", "nondrought")) #create new variable for drought and non drought years and assign drought to pre 2023 years
+```
+
+Visualize Data
+
+```{r}
+
+#create vectors of each plants data for drought and non drought
+#take an average
+#visualize data
+
+
+
+ggplot(aes())
+```
+
+Analyze Data
