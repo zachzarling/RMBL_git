@@ -74,12 +74,13 @@ visitation <- visitation %>%
   left_join(plantcount,by = c("site", "date","plant")) %>% 
   mutate(norm_visit = visits/count)  #create varible nomalizing visits
 
+#edit normalization? not 1:1 normalization
 
 #visitation2 <- visitation %>%
 #  group_by(site, plant) %>% 
-#  fill(avg_display) #WHAT THE FUCK FIL MOHTER FCKFI
+#  fill(avg_display)
 
-#fill in NA with data? how to not fill too much
+#fill in NA with data? how to not fill too much. is it fudging?
 
 ```
 
@@ -138,6 +139,9 @@ Visualize Data
 Analyze Data
 
 ```{r}
+
+#need to do stat tests
+
 #t test assumption tests
 
 # shapiro test and histagrams -----
