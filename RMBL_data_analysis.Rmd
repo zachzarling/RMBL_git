@@ -8,14 +8,23 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(tidyr)
+library(lme4)
+library(lmerTest)
 ```
 
 Load Data
 
 ```{r}
-P_traits <- read_csv("ZZ_planttraits.csv") #convert excel data to data frame
+#convert excel data to data frame
 
-Moisture <- read_csv("PastMoistureData.csv")
+x_p_traits <- read_csv("ZZ_planttraits.csv") 
+
+x_moisture <- read_csv("PastMoistureData.csv")
+
+x_visitation <- read_csv("qnest_network.csv")
+
+x_plantcount <- read_csv("qnest_plantsurvey.csv")
 
 ```
 
@@ -23,34 +32,247 @@ Wrangle Data
 
 ```{r}
 #create a data frame with unique moisture data per data
-#create new data frame from subset of past moisture data
-Moisture_Unique <- Moisture %>% 
+moisture <- x_moisture %>% 
   group_by(site, date) %>%  #organize data by site and date
   summarise(soilmoist1 = first(soilmoist1), soilmoist5 = first(soilmoist5)) #extract the first moisture data point from days with multiple entires
 
 
+#wrangle plant count
+plantcount <- x_plantcount %>% 
+  select( -c(8:126), -3, -4, -7) %>% #remove irrelavant columns
+  rename(plant = plant_name) %>% #rename column to join frames
+  filter(plant %in% c("Linum lewisii", "Taraxacum officinale", "Potentilla pulcherrima")) %>% #get rid of non sample species data
+  mutate(date = mdy(date)) %>% #convert date from string to date format
+  filter(date > mdy("6/1/2021")) %>%  #cut data to timeframe
+  group_by(site, date, plant) %>% 
+  summarise(count = sum(total_flowers))  #sum plant counts with same date/site
+#***************
+  
+
+
 #create full data set by adding past moisture data to plant traits
-Data <- P_traits %>% 
-  left_join(Moisture_Unique,by = c("site", "date")) %>% #join moisture data to rows with the same date and site
-  rename(moist_1 = `Moisture Top`, moist_5 = `Moisture Middle`) %>% #rename column names for coding simplicity
-  mutate(moist_1 = ifelse(is.na(moist_1) == TRUE, soilmoist1, moist_1), #add soil moisture data to rows lacking moisture data
+p_traits <- x_p_traits %>% 
+  left_join(moisture,by = c("site", "date")) %>% #join moisture using date and site
+  rename(moist_1 = `Moisture Top`, moist_5 = `Moisture Middle`) %>% #rename column 
+  mutate(moist_1 = ifelse(is.na(moist_1) == TRUE, soilmoist1, moist_1),#add moisture data to new columns
          moist_5 = ifelse(is.na(moist_5) == TRUE, soilmoist5, moist_5)) %>%
   select(-soilmoist1, -soilmoist5) %>% #remove past soil moisture coulmns from data
   mutate(date = mdy(date)) %>% #convert date from string to date format
-  mutate(drought_cat = ifelse(date < mdy("1/1/2023"), "drought", "nondrought")) #create new variable for drought and non drought years and assign drought to pre 2023 years
+  #mutate(drought_cat = ifelse(date < mdy("1/1/2023"), "drought", "nondrought")) %>%
+#new variable for drought(>23) and nondrought years(<23)
+  filter(plant %in% c("Linum lewisii", "Taraxacum officinale", "Potentilla pulcherrima")) %>% #keep only plants with enough data
+  mutate(week = week(date),year = year(date)) %>% #new date columns based on week and year
+  group_by(site, date, plant) %>% 
+  mutate(avg_height = mean(flowerheight), avg_display = mean(displaysize)) %>% #new cloumn for average height and display
+  group_by(site, date) %>%
+  mutate(avg_moist = mean(c(moist_1, moist_5))) #new variable for average moisture
+
+avg_traits <- p_traits %>% 
+  select(avg_height,avg_display, avg_moist, plant) %>% #create new data frame for average traits to be joined with visitation data
+  left_join(plantcount,by = c("site", "date","plant")) %>% 
+  mutate(dis_area = count*avg_display) %>% 
+  mutate(week = week (date),year = year(date)) %>%
+  distinct()
+
+
+
+#wrangle visitation data to usable format
+visitation <- x_visitation %>%
+  filter(round == 1)%>%
+  select( -c(3:8), -10, -c(12:19)) %>%   #remove unneccessary columns
+  filter(plant %in% c("Linum lewisii", "Taraxacum officinale", "Potentilla pulcherrima")) %>% #get rid of non smaple species data
+  mutate(date = mdy(date)) %>% #convert date from string to date format
+  filter(date > mdy("6/1/2021")) %>% #cut data to timeframe
+  mutate(week = week (date),year = year(date)) %>%
+  group_by(site, date, plant) %>% #group by site, date and plant ***add round***
+  mutate(visits = table(plant)) %>%  #new column summing visitation
+  left_join(avg_traits, visitation, by=c("site", "week", "year", "plant")) %>% #join avg trait data to visitation data ***not filling inn by week*****
+  mutate(norm_visit = visits/count) %>%  #create varible nomalizing visits
+  distinct() #isolate distinct row with one visitation data instance
+
+samplesize <- p_traits %>% 
+  group_by( year, plant) %>% 
+  count()
+
+
+
+#avg visitation perround, need to keep round?
+
 ```
 
 Visualize Data
 
 ```{r}
 
-#create vectors of each plants data for drought and non drought
-#take an average
-#visualize data
+#MEM
+
+
+#residuals visualization (cloudy = good)
+linear.model <- lm(flowerheight ~ avg_moist, data = p_traits)
+
+res <-  resid(linear.model)
+
+plot(fitted(linear.model), res)
+
+#MEM
+
+potpul_traits <- p_traits %>% 
+  filter(plant == "Potentilla pulcherrima")
+
+potpul.HM <- lmer(flowerheight ~ avg_moist + (1|site), data = potpul_traits, REML = FALSE)
 
 
 
-ggplot(aes())
+linlew_traits <- p_traits %>% 
+  filter(plant == "Linum lewisii")
+
+linlew.HM <- lmer(flowerheight ~ avg_moist + (1|site), data = linlew_traits, REML = FALSE)
+
+
+
+tarax_traits <- p_traits %>% 
+  filter(plant == "Taraxacum officinale")
+
+tarax.HM <- lmer(flowerheight ~ avg_moist + (1|site), data = tarax_traits, REML = FALSE)
+
+
+
+#moisture vs drought cat
+
+ggplot(p_traits, aes(y=avg_moist, x=drought_cat)) +
+  geom_boxplot(position='dodge') +
+     facet_wrap(~site)
+
+ggplot(p_traits, aes(y=avg_moist, x=week, color = drought_cat)) +
+    geom_point() +
+     facet_wrap(~site)
+
+#height vs moist
+
+   ggplot(avg_traits, aes(fill=site, y=avg_height, x=avg_moist)) +
+      geom_point() +
+      geom_smooth(method="lm") +
+     facet_wrap(~plant)
+   
+#display vs moist
+   
+ ggplot(avg_traits, aes(fill=plant, y=avg_display, x=avg_moist)) +
+    geom_point() +
+    geom_smooth(method="lm")
+ 
+#moisture vs height
+ 
+  avg_traits %>%
+  ggplot(aes(avg_moist,avg_height,color=plant )) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  facet_wrap(~site)
+
+#moisture vs display
+ 
+    avg_traits %>%
+  ggplot(aes(avg_moist,avg_display,color=plant )) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  facet_wrap(~site)
+ 
+ 
+#moisture vs flower count
+    
+    avg_traits %>%
+  ggplot(aes(avg_moist,count,color=plant )) +
+  geom_point() +
+  geom_smooth(method="lm")
+    
+    
+#moisture vs display area
+    
+    avg_traits %>%
+  ggplot(aes(avg_moist,dis_area,color=plant )) +
+  geom_point() +
+  geom_smooth(method="lm")
+    
+    
+  
+    
+    
+    
+    
+    
+    
+    
+
+ 
+#visitation vs count
+ 
+  visitation %>%
+  ggplot(aes(count,visits,color=plant )) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  theme_classic()
+  
+  #giving bad results, we dont catch 50x more pollinators when we have 50x more flowers
+
+  
+#visitation vs count without pot pul
+  
+    vis_min_pp %>%
+  ggplot(aes(count,visits,color=plant )) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  theme_classic()
+ 
+#visitation vs height
+ 
+ visitation %>%
+  ggplot(aes(avg_height,norm_visit,color=plant )) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  theme_classic()
+ 
+ #visitation vs display (count norm)
+ 
+  visitation %>%
+  ggplot(aes(avg_display,norm_visit, color = plant,  alpha = count )) +
+  geom_point() #+
+  #geom_smooth(method="lm")
+  
+
+#visitation vs display (area norm)
+    visitation %>%
+  ggplot(aes(avg_display,dis_area, color = plant)) +
+  geom_point() #+
+  #geom_smooth(method="lm")
+  
+  
+  
+
+
 ```
 
 Analyze Data
+
+```{r}
+
+#need to do stat tests
+
+#t test assumption tests
+
+# shapiro test and histagrams -----
+ # P > 0.05 means normal distribution
+ 
+
+
+ shapiro.test(PW_steosa)
+ hist(PW_steosa)
+ 
+ shapiro.test(PW_versicolor)
+ hist(PW_versicolor)
+
+
+#t test
+
+
+#regression
+
+```

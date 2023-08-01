@@ -232,14 +232,54 @@ date,site,plant,flowerheight,displaysize,Moisture Top,Moisture Middle,notes
 7/12/2023,Virginia Basin,Taraxacum officinale,76,1889.69,22.7,20.8,outside plot
 7/12/2023,Virginia Basin,Taraxacum officinale,253,1756.3,23.7,21.8,outside plot
 7/13/2023,Gothic Town,Potentilla pulcherrima,300,249.55,1,7.9,
-7/13/2023,Gothic Town,Potentilla pulcherrima,295,228.96,2,8.9,
-7/13/2023,Gothic Town,Potentilla pulcherrima,277,231.4,3,9.9,
-7/13/2023,Gothic Town,Potentilla pulcherrima,365,235.5,4,10.9,
-7/13/2023,Gothic Town,Potentilla pulcherrima,228,207.32,5,11.9,
-7/13/2023,Gothic Town,Linum lewisii,391,896.7,6,12.9,
-7/13/2023,Gothic Town,Linum lewisii,400,820.52,7,13.9,
-7/13/2023,Gothic Town,Linum lewisii,408,1065.6,8,14.9,
-7/13/2023,Gothic Town,Taraxacum officinale,138,2241.12,9,15.9,outside plot
-7/13/2023,Gothic Town,Linum lewisii,325,855.44,10,16.9,
-7/13/2023,Gothic Town,Linum lewisii,445,741.84,11,17.9,
-7/13/2023,Gothic Town,Taraxacum officinale,180,853.74,12,18.9,outside plot
+7/13/2023,Gothic Town,Potentilla pulcherrima,295,228.96,1,7.9,
+7/13/2023,Gothic Town,Potentilla pulcherrima,277,231.4,1,7.9,
+7/13/2023,Gothic Town,Potentilla pulcherrima,365,235.5,1,7.9,
+7/13/2023,Gothic Town,Potentilla pulcherrima,228,207.32,1,7.9,
+7/13/2023,Gothic Town,Linum lewisii,391,896.7,1,7.9,
+7/13/2023,Gothic Town,Linum lewisii,400,820.52,1,7.9,
+7/13/2023,Gothic Town,Linum lewisii,408,1065.6,1,7.9,
+7/13/2023,Gothic Town,Taraxacum officinale,138,2241.12,1,7.9,outside plot
+7/13/2023,Gothic Town,Linum lewisii,325,855.44,1,7.9,
+7/13/2023,Gothic Town,Linum lewisii,445,741.84,1,7.9,
+7/13/2023,Gothic Town,Taraxacum officinale,180,853.74,1,7.9,outside plot
+7/19/2023,Virginia Basin,Potentilla pulcherrima,312,393.3,5.9,10.6,windy
+7/19/2023,Virginia Basin,Potentilla pulcherrima,343,336.7,5.9,10.6,
+7/19/2023,Virginia Basin,Potentilla pulcherrima,202,380.25,5.9,10.6,
+7/19/2023,Virginia Basin,Potentilla pulcherrima,321,447.02,5.9,10.6,
+7/19/2023,Virginia Basin,Potentilla pulcherrima,302,366.3,5.9,10.6,
+7/19/2023,Virginia Basin,Linum lewisii,256,970.32,5.9,10.6,
+7/19/2023,Virginia Basin,Linum lewisii,296,654.15,5.9,10.6,
+7/19/2023,Virginia Basin,Linum lewisii,300,1203.93,5.9,10.6,
+7/19/2023,Virginia Basin,Linum lewisii,302,1087.56,5.9,10.6,
+7/19/2023,Virginia Basin,Linum lewisii,208,864.36,5.9,10.6,
+7/19/2023,Virginia Basin,Achillea millefolium,138,702.45,5.9,10.6,
+7/19/2023,Virginia Basin,Achillea millefolium,181,528.36,5.9,10.6,
+7/19/2023,Virginia Basin,Achillea millefolium,159,324.24,5.9,10.6,
+7/19/2023,Virginia Basin,Achillea millefolium,182,1032.51,5.9,10.6,
+7/19/2023,Virginia Basin,Achillea millefolium,156,483.75,5.9,10.6,
+7/21/2023,Gothic Town,Linum lewisii,532,468.6,1.5,6.3,
+7/21/2023,Gothic Town,Linum lewisii,551,537.99,1.5,6.3,
+7/21/2023,Gothic Town,Linum lewisii,475,218.68,1.5,6.3,
+7/21/2023,Gothic Town,Potentilla pulcherrima,404,306.09,1.5,6.3,
+7/21/2023,Gothic Town,Linum lewisii,313,602.5,1.5,6.3,
+7/21/2023,Gothic Town,Potentilla pulcherrima,366,196.56,1.5,6.3,
+7/21/2023,Gothic Town,Potentilla pulcherrima,407,291.41,1.5,6.3,
+7/21/2023,Gothic Town,Linum lewisii,421,915.06,1.5,6.3,
+7/21/2023,Gothic Town,Potentilla pulcherrima,475,269.31,1.5,6.3,
+7/21/2023,Gothic Town,Potentilla pulcherrima,382,237,1.5,6.3,
+7/21/2023,Gothic Town,Achillea millefolium,156,173.8,1.5,6.3,
+7/21/2023,Gothic Town,Achillea millefolium,402,748.02,1.5,6.3,not in plot
+7/21/2023,Gothic Town,Achillea millefolium,134,143.88,1.5,6.3,looks half dead
+7/21/2023,Gothic Town,Achillea millefolium,267,412.92,1.5,6.3,not in plot
+7/21/2023,Gothic Town,Achillea millefolium,231,374.01,1.5,6.3,
+7/24/2023,Avery Picnic,Potentilla pulcherrima,347,184.47,9.5,5.5,
+7/24/2023,Avery Picnic,Potentilla pulcherrima,323,167.64,9.5,5.5,
+7/24/2023,Avery Picnic,Potentilla pulcherrima,252,141.45,9.5,5.5,
+7/24/2023,Avery Picnic,Potentilla pulcherrima,223,152.5,9.5,5.5,
+7/24/2023,Avery Picnic,Potentilla pulcherrima,357,171.57,9.5,5.5,
+7/24/2023,Avery Picnic,Achillea millefolium,222,1939.2,9.5,5.5,not in plot
+7/24/2023,Avery Picnic,Achillea millefolium,254,2611.44,9.5,5.5,not in plot
+7/24/2023,Avery Picnic,Achillea millefolium,273,2699.4,9.5,5.5,inside plot
+7/24/2023,Avery Picnic,Achillea millefolium,265,747.78,9.5,5.5,not in plot
+7/24/2023,Avery Picnic,Achillea millefolium,321,1550,9.5,5.5,not in plot
