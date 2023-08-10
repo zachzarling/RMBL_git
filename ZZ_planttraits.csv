@@ -217,20 +217,20 @@ date,site,plant,flowerheight,displaysize,Moisture Top,Moisture Middle,notes
 7/17/2023,Avery Picnic,Linum lewisii,447,373.52,7,9.2,
 7/17/2023,Avery Picnic,Linum lewisii,508,970.26,7,9.2,
 7/12/2023,Virginia Basin,Potentilla pulcherrima,218,51.1,9.7,7.8,
-7/12/2023,Virginia Basin,Potentilla pulcherrima,257,88.32,10.7,8.8,
-7/12/2023,Virginia Basin,Potentilla pulcherrima,115,290.4,11.7,9.8,
-7/12/2023,Virginia Basin,Potentilla pulcherrima,253,184.96,12.7,10.8,
-7/12/2023,Virginia Basin,Taraxacum officinale,95,1081.6,13.7,11.8,
-7/12/2023,Virginia Basin,Potentilla pulcherrima,260,208.6,14.7,12.8,
-7/12/2023,Virginia Basin,Linum lewisii,300,761.67,15.7,13.8,
-7/12/2023,Virginia Basin,Linum lewisii,358,905.76,16.7,14.8,same individual as first
-7/12/2023,Virginia Basin,Linum lewisii,165,570.57,17.7,15.8,
-7/12/2023,Virginia Basin,Linum lewisii,205,688.64,18.7,16.8,
-7/12/2023,Virginia Basin,Linum lewisii,230,830.22,19.7,17.8,outside plot
-7/12/2023,Virginia Basin,Taraxacum officinale,50,1396.51,20.7,18.8,outside plot
-7/12/2023,Virginia Basin,Viola praemorsa,71,312.48,21.7,19.8,
-7/12/2023,Virginia Basin,Taraxacum officinale,76,1889.69,22.7,20.8,outside plot
-7/12/2023,Virginia Basin,Taraxacum officinale,253,1756.3,23.7,21.8,outside plot
+7/12/2023,Virginia Basin,Potentilla pulcherrima,257,88.32,9.7,7.8,
+7/12/2023,Virginia Basin,Potentilla pulcherrima,115,290.4,9.7,7.8,
+7/12/2023,Virginia Basin,Potentilla pulcherrima,253,184.96,9.7,7.8,
+7/12/2023,Virginia Basin,Taraxacum officinale,95,1081.6,9.7,7.8,
+7/12/2023,Virginia Basin,Potentilla pulcherrima,260,208.6,9.7,7.8,
+7/12/2023,Virginia Basin,Linum lewisii,300,761.67,9.7,7.8,
+7/12/2023,Virginia Basin,Linum lewisii,358,905.76,9.7,7.8,same individual as first
+7/12/2023,Virginia Basin,Linum lewisii,165,570.57,9.7,7.8,
+7/12/2023,Virginia Basin,Linum lewisii,205,688.64,9.7,7.8,
+7/12/2023,Virginia Basin,Linum lewisii,230,830.22,9.7,7.8,outside plot
+7/12/2023,Virginia Basin,Taraxacum officinale,50,1396.51,9.7,7.8,outside plot
+7/12/2023,Virginia Basin,Viola praemorsa,71,312.48,9.7,7.8,
+7/12/2023,Virginia Basin,Taraxacum officinale,76,1889.69,9.7,7.8,outside plot
+7/12/2023,Virginia Basin,Taraxacum officinale,253,1756.3,9.7,7.8,outside plot
 7/13/2023,Gothic Town,Potentilla pulcherrima,300,249.55,1,7.9,
 7/13/2023,Gothic Town,Potentilla pulcherrima,295,228.96,1,7.9,
 7/13/2023,Gothic Town,Potentilla pulcherrima,277,231.4,1,7.9,
@@ -283,3 +283,18 @@ date,site,plant,flowerheight,displaysize,Moisture Top,Moisture Middle,notes
 7/24/2023,Avery Picnic,Achillea millefolium,273,2699.4,9.5,5.5,inside plot
 7/24/2023,Avery Picnic,Achillea millefolium,265,747.78,9.5,5.5,not in plot
 7/24/2023,Avery Picnic,Achillea millefolium,321,1550,9.5,5.5,not in plot
+7/26/2023,Virginia Basin,Potentilla pulcherrima,384,254.38,5.4,6.3,
+7/26/2023,Virginia Basin,Potentilla pulcherrima,347,340.28,5.4,6.3,
+7/26/2023,Virginia Basin,Potentilla pulcherrima,329,345.87,5.4,6.3,
+7/26/2023,Virginia Basin,Achillea millefolium,307,2284.59,5.4,6.3,
+7/26/2023,Virginia Basin,Potentilla pulcherrima,476,302.1,5.4,6.3,
+7/26/2023,Virginia Basin,Potentilla pulcherrima,417,265.68,5.4,6.3,
+7/26/2023,Virginia Basin,Linum lewisii,317,1001.52,5.4,6.3,
+7/26/2023,Virginia Basin,Linum lewisii,321,769.94,5.4,6.3,
+7/26/2023,Virginia Basin,Achillea millefolium,368,1200.42,5.4,6.3,
+7/26/2023,Virginia Basin,Achillea millefolium,261,1163.97,5.4,6.3,
+7/26/2023,Virginia Basin,Achillea millefolium,171,1448.496,5.4,6.3,
+7/26/2023,Virginia Basin,Achillea millefolium,254,1054.8,5.4,6.3,
+7/26/2023,Virginia Basin,Linum lewisii,316,847,5.4,6.3,
+7/26/2023,Virginia Basin,Linum lewisii,338,407.68,5.4,6.3,
+7/26/2023,Virginia Basin,Linum lewisii,246,737.12,5.4,6.3,
