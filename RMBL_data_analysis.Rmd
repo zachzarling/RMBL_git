@@ -31,248 +31,246 @@ x_plantcount <- read_csv("qnest_plantsurvey.csv")
 Wrangle Data
 
 ```{r}
-#create a data frame with unique moisture data per data
+#WRANGLE SOIL MOISTURE-----------------------------------------
 moisture <- x_moisture %>% 
+  mutate(date = mdy(date)) %>% #convert string to date
+  filter(date > mdy("6/1/2021")) %>% 
   group_by(site, date) %>%  #organize data by site and date
-  summarise(soilmoist1 = first(soilmoist1), soilmoist5 = first(soilmoist5)) #extract the first moisture data point from days with multiple entires
+  summarise(soilmoist1 = first(soilmoist1), soilmoist5 = first(soilmoist5)) %>% #extract the first moisture data point from days with multiple entires
+  filter(site %in% c("Avery Picnic", "Gothic Town", "Virginia Basin")) #keep only study sites
 
 
-#wrangle plant count
+
+#WRANGLE PLANT COUNT-------------------------------------------
+
 plantcount <- x_plantcount %>% 
   select( -c(8:126), -3, -4, -7) %>% #remove irrelavant columns
   rename(plant = plant_name) %>% #rename column to join frames
-  filter(plant %in% c("Linum lewisii", "Taraxacum officinale", "Potentilla pulcherrima")) %>% #get rid of non sample species data
+  filter(plant %in% c("Linum lewisii", "Potentilla pulcherrima")) %>% #get rid of non sample species data
   mutate(date = mdy(date)) %>% #convert date from string to date format
   filter(date > mdy("6/1/2021")) %>%  #cut data to timeframe
   group_by(site, date, plant) %>% 
-  summarise(count = sum(total_flowers))  #sum plant counts with same date/site
-#***************
+  summarise(p.num = sum(total_flowers)) #sum plant counts with same date/site
+
   
-
-
-#create full data set by adding past moisture data to plant traits
+#WRANGLE PLANT TRAITS------------------------------------------
 p_traits <- x_p_traits %>% 
+  mutate(date = mdy(date)) %>% #convert date from string to date format
   left_join(moisture,by = c("site", "date")) %>% #join moisture using date and site
   rename(moist_1 = `Moisture Top`, moist_5 = `Moisture Middle`) %>% #rename column 
-  mutate(moist_1 = ifelse(is.na(moist_1) == TRUE, soilmoist1, moist_1),#add moisture data to new columns
-         moist_5 = ifelse(is.na(moist_5) == TRUE, soilmoist5, moist_5)) %>%
+  mutate(moist_1 = ifelse(is.na(moist_1) == TRUE, soilmoist1, moist_1), moist_5 = ifelse(is.na(moist_5) == TRUE, soilmoist5, moist_5)) %>% #add moisture data to new columns
   select(-soilmoist1, -soilmoist5) %>% #remove past soil moisture coulmns from data
-  mutate(date = mdy(date)) %>% #convert date from string to date format
-  #mutate(drought_cat = ifelse(date < mdy("1/1/2023"), "drought", "nondrought")) %>%
-#new variable for drought(>23) and nondrought years(<23)
-  filter(plant %in% c("Linum lewisii", "Taraxacum officinale", "Potentilla pulcherrima")) %>% #keep only plants with enough data
-  mutate(week = week(date),year = year(date)) %>% #new date columns based on week and year
+  mutate(avg_moist = rowMeans(select(., moist_1, moist_5), na.rm = TRUE)) %>% #new variable for average moisture
+   filter(plant %in% c("Linum lewisii", "Potentilla pulcherrima")) %>% #keep only plants with enough data
+  left_join(plantcount,by = c("site", "date","plant")) %>% #add plant count variable
+  mutate(wk = week(date),yr = year(date)) %>% #new date columns based on week and year
   group_by(site, date, plant) %>% 
-  mutate(avg_height = mean(flowerheight), avg_display = mean(displaysize)) %>% #new cloumn for average height and display
-  group_by(site, date) %>%
-  mutate(avg_moist = mean(c(moist_1, moist_5))) #new variable for average moisture
+  mutate(avg_height = mean(flowerheight), avg_display = mean(displaysize)) #new cloumn for average height and display
 
+
+#FOR MOISTURE VIS-----------------------------------------------
+moist23 <- p_traits %>% #moisture data from 2023
+  select(date, site, moist_1, moist_5) %>% 
+  rename(soilmoist1 = moist_1, soilmoist5 = moist_5) %>% 
+  distinct() #organize it to merge with past years moisture data
+
+graph_moist <- moisture %>% #create frame to visialize moisture trends
+  rbind(moist23) %>% #add 2023 moisture data to past years
+  mutate(avg_moist_gph = (soilmoist1*soilmoist5)/2) %>% #create average moisture value
+  mutate(wk = week(date),yr = year(date))
+
+
+#JOINABLE TRAIT TABLE-------------------------------------------
 avg_traits <- p_traits %>% 
-  select(avg_height,avg_display, avg_moist, plant) %>% #create new data frame for average traits to be joined with visitation data
-  left_join(plantcount,by = c("site", "date","plant")) %>% 
-  mutate(dis_area = count*avg_display) %>% 
-  mutate(week = week (date),year = year(date)) %>%
+  select(avg_height,avg_display, avg_moist, plant, wk, yr, site, p.num) %>% #create new data frame for average traits to be joined with visitation data
   distinct()
 
 
-
-#wrangle visitation data to usable format
+#WRANGLE VISITATION---------------------------------------------
 visitation <- x_visitation %>%
-  filter(round == 1)%>%
+  filter(round == 1) %>% #filter by round one
   select( -c(3:8), -10, -c(12:19)) %>%   #remove unneccessary columns
-  filter(plant %in% c("Linum lewisii", "Taraxacum officinale", "Potentilla pulcherrima")) %>% #get rid of non smaple species data
+  filter(plant %in% c("Linum lewisii" , "Potentilla pulcherrima")) %>% #get rid of non smaple species data
   mutate(date = mdy(date)) %>% #convert date from string to date format
   filter(date > mdy("6/1/2021")) %>% #cut data to timeframe
-  mutate(week = week (date),year = year(date)) %>%
-  group_by(site, date, plant) %>% #group by site, date and plant ***add round***
-  mutate(visits = table(plant)) %>%  #new column summing visitation
-  left_join(avg_traits, visitation, by=c("site", "week", "year", "plant")) %>% #join avg trait data to visitation data ***not filling inn by week*****
-  mutate(norm_visit = visits/count) %>%  #create varible nomalizing visits
-  distinct() #isolate distinct row with one visitation data instance
+  group_by(site, date, plant) %>% #group by site, date and plant
+  count(name = "visits") %>%  #new column summing visitation per site, date, plant 
+  mutate(wk = week(date),yr = year(date)) %>%
+  left_join(avg_traits, visitation, by=c("wk", "yr", "plant", "site")) %>% #join avg trait data to visitation data
+  mutate(norm_vis = visits/p.num) #create normalized visitaion value
+```
 
-samplesize <- p_traits %>% 
-  group_by( year, plant) %>% 
-  count()
+MEM analysis
+
+```{r}
+#TRAIT~MOISTURE MEM--------------------------------------------
+#isolate plant traits by species
+potpul_traits <- p_traits %>% 
+  filter(plant == "Potentilla pulcherrima")
+linlew_traits <- p_traits %>% 
+  filter(plant == "Linum lewisii")
+
+#height - moisture residuals visualization (cloudy = good)
+HM.LM <- lm(flowerheight ~ avg_moist, data = p_traits)
+HM.res<-  resid(HM.LM)
+plot(fitted(HM.LM), HM.res)
+#DM residuals
+DM.LM <- lm(displaysize ~ avg_moist, data = p_traits)
+DM.res<-  resid(DM.LM)
+plot(fitted(DM.LM), DM.res)
+
+#MEM height ~ moist
+potpul.HM <- lmer(flowerheight ~ avg_moist + (1|site), data = potpul_traits, REML = FALSE) #SIGNIFICANT
+linlew.HM <- lmer(flowerheight ~ avg_moist + (1|site), data = linlew_traits, REML = FALSE)
+
+#MEM display ~ moist
+potpul.DM <- lmer(displaysize ~ avg_moist + (1|site), data = potpul_traits, REML = FALSE) 
+linlew.DM <- lmer(displaysize ~ avg_moist + (1|site), data = linlew_traits, REML = FALSE) #SIGNIFICANT
 
 
 
-#avg visitation perround, need to keep round?
 
+#TRAIT~VISITATION MEM------------------------------------------
+#isolate visits by species
+potpul_visits <- visitation %>% 
+  filter(plant == "Potentilla pulcherrima")
+linlew_visits <- visitation %>% 
+  filter(plant == "Linum lewisii") 
+
+#HV residuals
+HV.LM <- lm(norm_vis ~ avg_height, data = visitation) #norm_visits creates trend
+HV.res<- resid(HV.LM)
+plot(fitted(HV.LM), HV.res)
+
+#DV residuals
+DV.LM <- lm(norm_vis ~ avg_display, data = visitation)
+DV.res<-  resid(DV.LM)
+plot(fitted(DV.LM), DV.res)
+
+
+#MEM height ~ norm_visits
+potpul.HV <- lmer(norm_vis ~ avg_height + (1|site), data = potpul_visits, REML = FALSE) 
+linlew.HV <- lmer(norm_vis ~ avg_height + (1|site), data = linlew_visits, REML = FALSE) #SINGULAR ERROR
+
+#MEM display ~ norm_visits
+potpul.DV <- lmer(norm_vis ~ avg_display + (1|site), data = potpul_visits, REML = FALSE)
+linlew.DV <- lmer(norm_vis ~ avg_display + (1|site), data = linlew_visits, REML = FALSE) #SINGULAR ERROR
 ```
 
 Visualize Data
 
 ```{r}
+#TRAIT~MOISTURE MEM---------------------------------------------
+#potpul height - moisture
+ggplot(potpul_traits, aes(color = site, y = flowerheight, x = avg_moist)) +
+  geom_point(shape = 16, size = 3) +
+  geom_abline(intercept = 314.543, slope = -7.062, color = "black") +
+  labs(title = "Average Moisture vs. Flower Height - Potentilla Pulcherrima" , x = "Average Moisture", y = "Flower Height") +
+  theme_minimal()
+#Intercept P-value:1.56e-12  Slope P-value:0.00307
 
-#MEM
-
-
-#residuals visualization (cloudy = good)
-linear.model <- lm(flowerheight ~ avg_moist, data = p_traits)
-
-res <-  resid(linear.model)
-
-plot(fitted(linear.model), res)
-
-#MEM
-
-potpul_traits <- p_traits %>% 
-  filter(plant == "Potentilla pulcherrima")
-
-potpul.HM <- lmer(flowerheight ~ avg_moist + (1|site), data = potpul_traits, REML = FALSE)
-
-
-
-linlew_traits <- p_traits %>% 
-  filter(plant == "Linum lewisii")
-
-linlew.HM <- lmer(flowerheight ~ avg_moist + (1|site), data = linlew_traits, REML = FALSE)
+#linlew height - moisture
+ggplot(linlew_traits, aes(color = site, y = flowerheight, x = avg_moist)) +
+  geom_point(shape = 18, size = 3) +
+  geom_abline(intercept = 366.9732, slope = -0.1606, linetype = "dashed", color = "black") +
+  labs(title = "Average Moisture vs. Flower Height - Linum Lewsii",
+       x = "Average Moisture", y = "Flower Height") +
+  theme_minimal()
+#Intercept P-value:0.000218  Slope P-value:0.960661
 
 
+#potpul display - moisture
+ggplot(potpul_traits, aes(color = site, y = displaysize, x = avg_moist)) +
+  geom_point(shape = 16, size = 3) +
+  geom_abline(intercept = 212.062, slope = 2.201, linetype = "dashed", color = "black") +
+  labs(title = "Average Moisture vs. Display Size - Potentilla Pulcherrima",
+       x = "Average Moisture", y = "Display Size") +
+  theme_minimal()
+#p-value - I:12.68e-05  S:0.232
 
-tarax_traits <- p_traits %>% 
-  filter(plant == "Taraxacum officinale")
+#linlew display - moisture
+ggplot(linlew_traits, aes(color = site, y = displaysize, x = avg_moist)) +
+  geom_point(shape = 18, size = 3) +
+  geom_abline(intercept = 562.939, slope = 21.687, color = "black") +
+  labs(title = "Average Moisture vs. Display Size - Linum Lewsii",
+       x = "Average Moisture", y = "Display Size") +
+  theme_minimal()
+#p-value - I:0.00016  S:0.00244
 
-tarax.HM <- lmer(flowerheight ~ avg_moist + (1|site), data = tarax_traits, REML = FALSE)
+
+#TRAIT~VISITATION MEM-------------------------------------------
+#potpul height - visits
+ggplot(potpul_visits, aes(color = site, x = avg_height, y = visits)) +
+  geom_point(shape = 16, size = 3) +
+  geom_abline(intercept = 0.507594, slope = -0.001153, linetype = "dashed", color = "black") +
+  labs(title = "Average Height vs. Visits per Flower - Potentilla Pulcherrima", x = "Average Height", y = "Visits per Flower") +
+  theme_minimal()
+#p-value - I:0.369 S:0.606
+
+#linlew height - visits
+ggplot(linlew_visits, aes(color = site, x = avg_height, y = visits)) +
+  geom_point(shape = 17, size = 3) +
+  geom_abline(intercept = -0.0448504, slope = 0.0003217, linetype = "dashed", color = "red") +
+  labs(title = "Average Height vs. Visits per Flower - Linum Lewsii",
+       x = "Average Height", y = "Visits per Flower", subtitle = "Overfitted") +
+  scale_y_continuous(expand = c(0.1, -0.5))+
+  theme_minimal()
+#p-value - I:0.2981 S:0.0287
+#OVERFITTED
+
+
+#potpul display - visits
+ggplot(potpul_visits, aes(color = site, x = avg_display, y = visits)) +
+  geom_point(shape = 16, size = 3) +
+  geom_abline(intercept = 0.819264, slope = -0.002501, linetype = "dashed", color = "black") +
+  labs(title = "Display Size vs. Visits per Flower - Potentilla Pulcherrima",
+       x = "Average Display Size", y = "Visits per Flower") +
+  theme_minimal()
+#p-value - I:0.112 S:0.212
+
+#linlew display - visits
+ggplot(linlew_visits, aes(color = site, x = avg_display, y = visits)) +
+  geom_point(shape = 18, size = 3) +
+  geom_abline(intercept = 2.147e-02, slope = 5.420e-05, linetype = "dashed", color = "red") +
+  scale_y_continuous(expand = c(0.2, 0)) +
+  labs(title = "Display Size vs. Visits per Flower - Linum Lewsii", x = "Average Display Size", y = "Visits per Flower", subtitle = "Overfitted") +
+  theme_minimal()
+#p-value - I:0.630 S:0.322
+#OVERFITTED
 
 
 
-#moisture vs drought cat
+#MOISTURE-----------------------------------------
+#moisture vs week
+ggplot(graph_moist, aes(x = wk, y = avg_moist_gph, color = as.factor(site))) +
+  geom_point(size = 3, alpha = 0.7) +  # Increase point size and transparency
+  geom_smooth(method = "lm", se = FALSE, size = 1) +  # Remove confidence interval and adjust line size
+  facet_wrap(~yr) +  
+  labs(title = "Average Soil Moisture by Week and Site",  # Add title and axis labels
+       x = "Week",
+       y = "Soil Moisture") +
+  theme_minimal() +  # Use a clean, minimalistic theme
+  theme(axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10),
+        legend.title = element_blank(), # Remove legend title
+        strip.text = element_text(size = 12, face = "bold"),
+        plot.title = element_text(size = 16, face = "bold"),            panel.spacing = unit(1.5, "lines"))
 
-ggplot(p_traits, aes(y=avg_moist, x=drought_cat)) +
-  geom_boxplot(position='dodge') +
-     facet_wrap(~site)
 
-ggplot(p_traits, aes(y=avg_moist, x=week, color = drought_cat)) +
-    geom_point() +
-     facet_wrap(~site)
+#VISITATION-----------------------------------------------------
+#histogram
+hist(visitation$norm_vis)
 
-#height vs moist
-
-   ggplot(avg_traits, aes(fill=site, y=avg_height, x=avg_moist)) +
+#vis vs count
+#visitation vs count (not 1:1)
+  visitation %>%
+  ggplot(aes(p.num,visits,color=plant)) +
+  geom_point()
+  
+#TRAITS ~ TIME--------------------------------------------------
+ggplot(avg_traits, aes(fill=site, y=avg_height, x=wk))+
       geom_point() +
       geom_smooth(method="lm") +
-     facet_wrap(~plant)
-   
-#display vs moist
-   
- ggplot(avg_traits, aes(fill=plant, y=avg_display, x=avg_moist)) +
-    geom_point() +
-    geom_smooth(method="lm")
- 
-#moisture vs height
- 
-  avg_traits %>%
-  ggplot(aes(avg_moist,avg_height,color=plant )) +
-  geom_point() +
-  geom_smooth(method="lm") +
-  facet_wrap(~site)
-
-#moisture vs display
- 
-    avg_traits %>%
-  ggplot(aes(avg_moist,avg_display,color=plant )) +
-  geom_point() +
-  geom_smooth(method="lm") +
-  facet_wrap(~site)
- 
- 
-#moisture vs flower count
-    
-    avg_traits %>%
-  ggplot(aes(avg_moist,count,color=plant )) +
-  geom_point() +
-  geom_smooth(method="lm")
-    
-    
-#moisture vs display area
-    
-    avg_traits %>%
-  ggplot(aes(avg_moist,dis_area,color=plant )) +
-  geom_point() +
-  geom_smooth(method="lm")
-    
-    
-  
-    
-    
-    
-    
-    
-    
-    
-
- 
-#visitation vs count
- 
-  visitation %>%
-  ggplot(aes(count,visits,color=plant )) +
-  geom_point() +
-  geom_smooth(method="lm") +
-  theme_classic()
-  
-  #giving bad results, we dont catch 50x more pollinators when we have 50x more flowers
-
-  
-#visitation vs count without pot pul
-  
-    vis_min_pp %>%
-  ggplot(aes(count,visits,color=plant )) +
-  geom_point() +
-  geom_smooth(method="lm") +
-  theme_classic()
- 
-#visitation vs height
- 
- visitation %>%
-  ggplot(aes(avg_height,norm_visit,color=plant )) +
-  geom_point() +
-  geom_smooth(method="lm") +
-  theme_classic()
- 
- #visitation vs display (count norm)
- 
-  visitation %>%
-  ggplot(aes(avg_display,norm_visit, color = plant,  alpha = count )) +
-  geom_point() #+
-  #geom_smooth(method="lm")
-  
-
-#visitation vs display (area norm)
-    visitation %>%
-  ggplot(aes(avg_display,dis_area, color = plant)) +
-  geom_point() #+
-  #geom_smooth(method="lm")
-  
-  
-  
-
-
-```
-
-Analyze Data
-
-```{r}
-
-#need to do stat tests
-
-#t test assumption tests
-
-# shapiro test and histagrams -----
- # P > 0.05 means normal distribution
- 
-
-
- shapiro.test(PW_steosa)
- hist(PW_steosa)
- 
- shapiro.test(PW_versicolor)
- hist(PW_versicolor)
-
-
-#t test
-
-
-#regression
-
+     facet_wrap(~yr)
 ```
