@@ -165,7 +165,7 @@ Visualize Data
 ggplot(potpul_traits, aes(color = site, y = flowerheight, x = avg_moist)) +
   geom_point(shape = 16, size = 3) +
   geom_abline(intercept = 314.543, slope = -7.062, color = "black") +
-  labs(title = "Average Moisture vs. Flower Height - Potentilla Pulcherrima" , x = "Average Moisture", y = "Flower Height") +
+  labs(title = "Average Soil Moisture vs. Flower Height - Potentilla Pulcherrima" , x = "Average Soil Moisture Content (%)", y = "Flower Height (mm)") +
   theme_minimal()
 #Intercept P-value:1.56e-12  Slope P-value:0.00307
 
@@ -173,8 +173,8 @@ ggplot(potpul_traits, aes(color = site, y = flowerheight, x = avg_moist)) +
 ggplot(linlew_traits, aes(color = site, y = flowerheight, x = avg_moist)) +
   geom_point(shape = 18, size = 3) +
   geom_abline(intercept = 366.9732, slope = -0.1606, linetype = "dashed", color = "black") +
-  labs(title = "Average Moisture vs. Flower Height - Linum Lewsii",
-       x = "Average Moisture", y = "Flower Height") +
+  labs(title = "Average Soil Moisture vs. Flower Height - Linum Lewsii",
+       x = "Average Soil Moisture Content (%)", y = "Flower Height (mm)") +
   theme_minimal()
 #Intercept P-value:0.000218  Slope P-value:0.960661
 
@@ -183,8 +183,8 @@ ggplot(linlew_traits, aes(color = site, y = flowerheight, x = avg_moist)) +
 ggplot(potpul_traits, aes(color = site, y = displaysize, x = avg_moist)) +
   geom_point(shape = 16, size = 3) +
   geom_abline(intercept = 212.062, slope = 2.201, linetype = "dashed", color = "black") +
-  labs(title = "Average Moisture vs. Display Size - Potentilla Pulcherrima",
-       x = "Average Moisture", y = "Display Size") +
+  labs(title = "Average Soil Moisture vs. Display Size - Potentilla Pulcherrima",
+       x = "Average Soil Moisture Content (%)", y = "Display Size (mm2)") +
   theme_minimal()
 #p-value - I:12.68e-05  S:0.232
 
@@ -192,8 +192,8 @@ ggplot(potpul_traits, aes(color = site, y = displaysize, x = avg_moist)) +
 ggplot(linlew_traits, aes(color = site, y = displaysize, x = avg_moist)) +
   geom_point(shape = 18, size = 3) +
   geom_abline(intercept = 562.939, slope = 21.687, color = "black") +
-  labs(title = "Average Moisture vs. Display Size - Linum Lewsii",
-       x = "Average Moisture", y = "Display Size") +
+  labs(title = "Average Soil Moisture vs. Display Size - Linum Lewsii",
+       x = "Average Soil Moisture Content (%)", y = "Display Size (mm2)") +
   theme_minimal()
 #p-value - I:0.00016  S:0.00244
 
@@ -203,7 +203,7 @@ ggplot(linlew_traits, aes(color = site, y = displaysize, x = avg_moist)) +
 ggplot(potpul_visits, aes(color = site, x = avg_height, y = visits)) +
   geom_point(shape = 16, size = 3) +
   geom_abline(intercept = 0.507594, slope = -0.001153, linetype = "dashed", color = "black") +
-  labs(title = "Average Height vs. Visits per Flower - Potentilla Pulcherrima", x = "Average Height", y = "Visits per Flower") +
+  labs(title = "Average Height vs. Visits per Flower - Potentilla Pulcherrima", x = "Average Height (mm)", y = "Visits per Flower") +
   theme_minimal()
 #p-value - I:0.369 S:0.606
 
@@ -212,7 +212,7 @@ ggplot(linlew_visits, aes(color = site, x = avg_height, y = visits)) +
   geom_point(shape = 17, size = 3) +
   geom_abline(intercept = -0.0448504, slope = 0.0003217, linetype = "dashed", color = "red") +
   labs(title = "Average Height vs. Visits per Flower - Linum Lewsii",
-       x = "Average Height", y = "Visits per Flower", subtitle = "Overfitted") +
+       x = "Average Height (mm)", y = "Visits per Flower", subtitle = "Overfitted") +
   scale_y_continuous(expand = c(0.1, -0.5))+
   theme_minimal()
 #p-value - I:0.2981 S:0.0287
@@ -224,7 +224,7 @@ ggplot(potpul_visits, aes(color = site, x = avg_display, y = visits)) +
   geom_point(shape = 16, size = 3) +
   geom_abline(intercept = 0.819264, slope = -0.002501, linetype = "dashed", color = "black") +
   labs(title = "Display Size vs. Visits per Flower - Potentilla Pulcherrima",
-       x = "Average Display Size", y = "Visits per Flower") +
+       x = "Average Display Size (mm2)", y = "Visits per Flower") +
   theme_minimal()
 #p-value - I:0.112 S:0.212
 
@@ -233,7 +233,7 @@ ggplot(linlew_visits, aes(color = site, x = avg_display, y = visits)) +
   geom_point(shape = 18, size = 3) +
   geom_abline(intercept = 2.147e-02, slope = 5.420e-05, linetype = "dashed", color = "red") +
   scale_y_continuous(expand = c(0.2, 0)) +
-  labs(title = "Display Size vs. Visits per Flower - Linum Lewsii", x = "Average Display Size", y = "Visits per Flower", subtitle = "Overfitted") +
+  labs(title = "Display Size vs. Visits per Flower - Linum Lewsii", x = "Average Display Size (mm2)", y = "Visits per Flower", subtitle = "Overfitted") +
   theme_minimal()
 #p-value - I:0.630 S:0.322
 #OVERFITTED
@@ -248,7 +248,7 @@ ggplot(graph_moist, aes(x = wk, y = avg_moist_gph, color = as.factor(site))) +
   facet_wrap(~yr) +  
   labs(title = "Average Soil Moisture by Week and Site",  # Add title and axis labels
        x = "Week",
-       y = "Soil Moisture") +
+       y = "Average Soil Moisture Content (%)") +
   theme_minimal() +  # Use a clean, minimalistic theme
   theme(axis.text = element_text(size = 10),
         axis.title = element_text(size = 12, face = "bold"),
